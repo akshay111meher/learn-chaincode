@@ -6,6 +6,7 @@ import (
 	"strings"
 	"strconv"
 	"encoding/json"
+	"encoding/base64"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	pb "github.com/hyperledger/fabric/protos/peer"
 )
@@ -88,9 +89,27 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 }
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface) pb.Response {
-    function, _ := stub.GetFunctionAndParameters()
+    function, args := stub.GetFunctionAndParameters()
     fmt.Println("Query is running " + function)
-	return shim.Success(nil)
+    
+    if function =="getEmployee"{
+		return t.getEmployee(stub,args)
+	}
+	
+	return shim.Error("Received unknown function query")
+}
+
+func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []string) pb.Response{
+	if len(args) !=1{
+		return shim.Error("Incorrect number of arguments. Expecting 1")
+	}
+	employeeId := args[0]
+	employee, err := stub.GetState(employeeId)
+	if err != nil {
+		return shim.Error(fmt.Sprintf("Failed retrieving employee [%s]: [%s]", employeeId, err))
+	}
+	
+	return shim.Success([]byte(base64.StdEncoding.EncodeToString(employee)))
 }
 
 
