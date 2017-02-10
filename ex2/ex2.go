@@ -34,6 +34,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface) pb.Response {
     
     if function =="initEmployee"{
 		return t.initEmployee(stub,args)
+	}else if function =="getEmployee"{
+		return t.getEmployee(stub,args)
 	}
 	return shim.Error("Received unknown function invocation")
 }
