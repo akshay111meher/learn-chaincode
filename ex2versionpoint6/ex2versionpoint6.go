@@ -16,19 +16,19 @@ type SimpleChaincode struct {
 
 
 type Employee struct {
-	name string 
-	employeeId int
-	project string
+	name string `json:name`
+	employeeId int `json:employeeId`
+	project string `json:project`
 }
 
 type Customer struct {
-	name string
-	customerId int
+	name string `json:name`
+	customerId int `json:customerId`
 }
 type Project struct {
-	name string
-	projectId int
-	customerOf string
+	name string `json:name`
+	projectId int `json:projectId`
+	customerOf string `json:customerOf`
 }
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
