@@ -16,19 +16,19 @@ type SimpleChaincode struct {
 
 
 type Employee struct {
-	name string `json:name`
-	employeeId int `json:employeeId`
-	project string `json:project`
+	Name string `json:"name"`
+	EmployeeId int `json:"employeeId"`
+	Project string `json:"project"`
 }
 
 type Customer struct {
-	name string `json:name`
-	customerId int `json:customerId`
+	Name string `json:"name"`
+	CustomerId int `json:"customerId"`
 }
 type Project struct {
-	name string `json:name`
-	projectId int `json:projectId`
-	customerOf string `json:customerOf`
+	Name string `json:"name"`
+	ProjectId int `json:"projectId"`
+	CustomerOf string `json:"customerOf"`
 }
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
@@ -89,7 +89,7 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 		return nil, errors.New("This project already exists "+projectIdAsString)
 	}
 	
-	project:= &Project{projectName,projectId,customerOf}
+	project:= Project{projectName,projectId,customerOf}
 	
 	projectJSONasBytes, err := json.Marshal(project)
 	
@@ -171,7 +171,7 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 			return nil,errors.New("This customer already exists: "+customerIdAsString)
 		}
 
-		customer:= &Customer{customerName,customerId}
+		customer:= Customer{customerName,customerId}
 		
 		customerJSONasBytes, err := json.Marshal(customer)
 		
@@ -221,10 +221,10 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 		return nil,errors.New("This employee already exists: "+employeeIdAsString)
 	}
 	
-	employee:= &Employee{employeeName,employeeId,project}
-	
+	employee:= Employee{employeeName,employeeId,project}
+	fmt.Println(employee)
 	employeeJSONasBytes, err := json.Marshal(employee)
-	
+	fmt.Println(employeeJSONasBytes)
 	if err != nil {
 		return nil,err
 	}
@@ -233,7 +233,8 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil,err
 	}
-	
+	employee_temp,_ := stub.GetState(employeeIdAsString)
+	fmt.Println(employee_temp)
 	// composite key to get employees by project
 	
 	/* 
@@ -271,6 +272,7 @@ func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []s
 	}
 	employeeId := args[0]
 	employee, err := stub.GetState(employeeId)
+	fmt.Println(employee)
 	if err != nil {
 		return nil,err
 	}
