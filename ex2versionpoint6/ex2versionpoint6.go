@@ -29,6 +29,8 @@ type Project struct {
 	Name string `json:"name"`
 	ProjectId int `json:"projectId"`
 	CustomerOf string `json:"customerOf"`
+	StartTime string `json:"startDate"`
+	EndTime string `json:"endDate"`
 }
 
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
@@ -72,11 +74,19 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 	if len(args[2]) <= 0 {
 		return nil,errors.New("3rd argument must be a non-empty string")
 	}
+	if len(args[3]) <= 0 {
+		return nil,errors.New("4th argument must be a non-empty string")
+	}
+	if len(args[4]) <= 0 {
+		return nil,errors.New("5th argument must be a non-empty string")
+	}
 	
 	projectName := args[0]
 	customerOf := strings.ToLower(args[2])
 	projectId, err := strconv.Atoi(args[1])
 	projectIdAsString := args[1]
+	startDate:= args[3]
+	endDate:= args[4]
 	if err != nil {
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
@@ -89,7 +99,7 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 		return nil, errors.New("This project already exists "+projectIdAsString)
 	}
 	
-	project:= Project{projectName,projectId,customerOf}
+	project:= Project{projectName,projectId,customerOf,startDate,endDate}
 	
 	projectJSONasBytes, err := json.Marshal(project)
 	
