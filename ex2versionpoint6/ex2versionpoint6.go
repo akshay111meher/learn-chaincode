@@ -228,7 +228,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 		return nil,err
 	} else if employeeAsBytes != nil {
 		fmt.Println("This employee already exists: " + employeeIdAsString)
-		return nil,errors.New("This employee already exists: "+employeeIdAsString)
+		return byte[]("duplicate"),errors.New("This employee already exists: "+employeeIdAsString)
 	}
 	
 	employee:= Employee{employeeName,employeeId,project}
