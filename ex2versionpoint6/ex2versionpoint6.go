@@ -60,8 +60,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 
 func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
 	
-	if len(args) != 3 {
-		return nil,errors.New("Incorrect number of arguments. Expecting 3")
+	if len(args) != 5 {
+		return nil,errors.New("Incorrect number of arguments. Expecting 5")
 	}
 	// ==== Input sanitation ====
 	fmt.Println("- start initProject")
