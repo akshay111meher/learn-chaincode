@@ -61,6 +61,8 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface , function str
 		return t.initEmployee(stub,args)
 	}else if function == "initCustomer"{
 		return t.initCustomer(stub,args)
+	}else if function == "initProject"{
+		return t.initProject(stub,args)
 	}
 	
 	return nil,errors.New("Received unknown function invoke")
