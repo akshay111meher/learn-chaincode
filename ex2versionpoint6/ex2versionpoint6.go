@@ -54,10 +54,64 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.initProject(stub,args)
 	}else if function =="getProject"{
 		return t.getProject(stub,args)
+	}else if function =="changeProject"{
+		return t.changeProject(stub,args)
 	}
 	return nil,errors.New("Received unknown function invocation")
 }
-
+func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
+	if len(args)!=2 {
+		return nil,errors.New("Incorrect Number of arguments. Expecting 2")
+	}
+	// ==== Input sanitation ====
+	fmt.Println("- start changeProject")
+	if len(args[0]) <= 0 {
+		return nil,errors.New("1st argument must be a non-empty string")
+	}
+	if len(args[1]) <= 0 {
+		return nil,errors.New("2nd argument must be a non-empty string")
+	}
+	employeeId := args[0]
+	project := strings.ToLower(args[1])
+	_, err := strconv.Atoi(project)
+	
+	if err != nil {
+		return nil,errors.New("2nd argument must be a numeric string")
+	}
+	_, err = strconv.Atoi(employeeId)
+	
+	if err != nil {
+		return nil,errors.New("1st argument must be a numeric string")
+	}
+	
+	_, err = stub.GetState(project)
+	if err != nil {
+		return nil,err
+	}
+	
+	employee, err := stub.GetState(employeeId)
+	if err != nil {
+		return nil,err
+	}
+	
+	var e Employee
+	
+	json.Unmarshal(employee,&e)
+	e.Project = project
+	fmt.Println(e)
+	
+	employeeJSONasBytes, err := json.Marshal(e)
+	fmt.Println(employeeJSONasBytes)
+	if err != nil {
+		return nil,err
+	}
+	err = stub.PutState(employeeId, employeeJSONasBytes)
+	
+	if err != nil {
+		return nil,err
+	}
+	return nil,nil
+}
 func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
 	
 	if len(args) != 5 {
