@@ -33,6 +33,23 @@ type Project struct {
 	EndTime string `json:"endDate"`
 }
 
+type EmployeeEfforts struct{
+	Efforts string
+	Project string
+}
+
+type ProjectEfforts struct{
+	Efforts string
+	Employee string
+}
+
+type EmployeeInvoice struct{
+	List []EmployeeEfforts
+}
+type ProjectInvoice struct{
+	List []ProjectEfforts
+}
+
 func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
     fmt.Println("Init is running " + function)
     return nil,nil
@@ -56,8 +73,76 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 		return t.getProject(stub,args)
 	}else if function =="changeProject"{
 		return t.changeProject(stub,args)
+	}else if function =="submitEfforts"{
+		return t.submitEfforts(stub,args)
 	}
 	return nil,errors.New("Received unknown function invocation")
+}
+
+func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
+	if len(args)!=4{
+		return nil,errors.New("Incorrect Number of arguments. Expecting 4")
+	}
+	fmt.Println("- start submitEfforts -")
+	employeeId := args[0]
+	timestamp := args[1]
+	employeeIdAndTimestamp := args[2]
+	efforts := args[3]
+	employeeJSONasBytes,err := stub.GetState(employeeId)
+	
+	if err != nil {
+		return nil,err
+	}
+	var e Employee
+	json.Unmarshal(employeeJSONasBytes,&e)
+	
+	var ei EmployeeInvoice
+	var pi ProjectInvoice
+	
+	employeeInvoiceAsBytes,err := stub.GetState(employeeIdAndTimestamp)
+	
+	if err != nil{
+		return nil,err
+	}
+	json.Unmarshal(employeeInvoiceAsBytes,&ei)
+	
+	var ef EmployeeEfforts
+	ef = EmployeeEfforts{efforts,e.Project}
+	ei.List = append(ei.List,ef)
+	
+	employeeInvoiceAsBytes,err = json.Marshal(ei)
+	if err!= nil{
+		return nil,err
+	}
+	err = stub.PutState(employeeIdAndTimestamp,employeeInvoiceAsBytes)
+	if err !=nil{
+		return nil,err
+	}
+	
+	var projectIdAndTimestamp string
+	projectIdAndTimestamp = e.Project+""+timestamp
+	
+	projectInvoiceAsBytes,err := stub.GetState(projectIdAndTimestamp)
+	
+	json.Unmarshal(projectInvoiceAsBytes,&pi)
+	
+	var pf ProjectEfforts
+	pf = ProjectEfforts{e.Project,efforts}
+	pi.List = append(pi.List,pf)
+	
+	projectInvoiceAsBytes,err = json.Marshal(pi)
+	
+	if err!= nil{
+		return nil,err
+	}
+	
+	err = stub.PutState(projectIdAndTimestamp,projectInvoiceAsBytes)
+	
+	if err!= nil{
+		return nil,err
+	}
+	
+	return nil,nil
 }
 func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
 	if len(args)!=2 {
@@ -324,11 +409,26 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 		return t.getCustomer(stub,args)
 	}else if function =="getProject"{
 		return t.getProject(stub,args)
+	}else if function == "getEfforts"{
+		return t.getEfforts(stub,args)
 	}
 	
 	return nil,errors.New("Received unknown function query")
 }
-
+func (t *SimpleChaincode) getEfforts(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
+	fmt.Printf("getEfforts called")
+	if len(args) !=1{
+		return nil,errors.New("Incorrect number of arguments. Expecting 1")
+	}
+	idAndTimestamp := args[0]
+	invoice, err := stub.GetState(idAndTimestamp)
+	fmt.Println(invoice)
+	if err != nil {
+		return nil,err
+	}
+	
+	return invoice,nil
+}
 func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
 	fmt.Printf("getEmployee called")
 	if len(args) !=1{
