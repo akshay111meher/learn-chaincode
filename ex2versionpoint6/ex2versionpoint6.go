@@ -127,7 +127,7 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	json.Unmarshal(projectInvoiceAsBytes,&pi)
 	
 	var pf ProjectEfforts
-	pf = ProjectEfforts{efforts,e.EmployeeId}
+	pf = ProjectEfforts{efforts,employeeId}
 	pi.List = append(pi.List,pf)
 	
 	projectInvoiceAsBytes,err = json.Marshal(pi)
