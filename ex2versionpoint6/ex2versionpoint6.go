@@ -332,7 +332,7 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 		if err != nil {
 			return nil,err
 		}
-		stub.SetEvent("customerAdded",[]byte(customerName))
+		stub.SetEvent("customerAdded",customerJSONasBytes)
 		fmt.Println("- end initCustomer")
 		return nil,nil
 }
