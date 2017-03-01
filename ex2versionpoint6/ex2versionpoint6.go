@@ -111,7 +111,7 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	json.Unmarshal(employeeInvoiceAsBytes,&ei)
 
 	var ef EmployeeEfforts
-	ef = EmployeeEfforts{efforts,e.Project}
+	ef = EmployeeEfforts{Efforts:efforts,Project:e.Project}
 	toSend1,err := json.Marshal(ef)
 	stub.SetEvent("notifySubmitEfforts",toSend1)
 	ei.List = append(ei.List,ef)
