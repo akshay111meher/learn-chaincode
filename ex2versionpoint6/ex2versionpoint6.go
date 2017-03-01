@@ -56,9 +56,9 @@ func (t *SimpleChaincode) Init(stub shim.ChaincodeStubInterface, function string
 }
 
 func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
-    
+
     fmt.Println("Invoke is running " + function)
-    
+
     if function =="initEmployee"{
 		return t.initEmployee(stub,args)
 	}else if function =="getEmployee"{
@@ -89,27 +89,27 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	employeeIdAndTimestamp := args[2]
 	efforts := args[3]
 	employeeJSONasBytes,err := stub.GetState(employeeId)
-	
+
 	if err != nil {
 		return nil,err
 	}
 	var e Employee
 	json.Unmarshal(employeeJSONasBytes,&e)
-	
+
 	var ei EmployeeInvoice
 	var pi ProjectInvoice
-	
+
 	employeeInvoiceAsBytes,err := stub.GetState(employeeIdAndTimestamp)
-	
+
 	if err != nil{
 		return nil,err
 	}
 	json.Unmarshal(employeeInvoiceAsBytes,&ei)
-	
+
 	var ef EmployeeEfforts
 	ef = EmployeeEfforts{efforts,e.Project}
 	ei.List = append(ei.List,ef)
-	
+
 	employeeInvoiceAsBytes,err = json.Marshal(ei)
 	if err!= nil{
 		return nil,err
@@ -118,30 +118,30 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	if err !=nil{
 		return nil,err
 	}
-	
+
 	var projectIdAndTimestamp string
 	projectIdAndTimestamp = e.Project+""+timestamp
-	
+
 	projectInvoiceAsBytes,err := stub.GetState(projectIdAndTimestamp)
-	
+
 	json.Unmarshal(projectInvoiceAsBytes,&pi)
-	
+
 	var pf ProjectEfforts
 	pf = ProjectEfforts{efforts,employeeId}
 	pi.List = append(pi.List,pf)
-	
+
 	projectInvoiceAsBytes,err = json.Marshal(pi)
-	
+
 	if err!= nil{
 		return nil,err
 	}
-	
+
 	err = stub.PutState(projectIdAndTimestamp,projectInvoiceAsBytes)
-	
+
 	if err!= nil{
 		return nil,err
 	}
-	
+
 	return nil,nil
 }
 func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
@@ -159,46 +159,46 @@ func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args [
 	employeeId := args[0]
 	project := strings.ToLower(args[1])
 	_, err := strconv.Atoi(project)
-	
+
 	if err != nil {
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
 	_, err = strconv.Atoi(employeeId)
-	
+
 	if err != nil {
 		return nil,errors.New("1st argument must be a numeric string")
 	}
-	
+
 	_, err = stub.GetState(project)
 	if err != nil {
 		return nil,err
 	}
-	
+
 	employee, err := stub.GetState(employeeId)
 	if err != nil {
 		return nil,err
 	}
-	
+
 	var e Employee
-	
+
 	json.Unmarshal(employee,&e)
 	e.Project = project
 	fmt.Println(e)
-	
+
 	employeeJSONasBytes, err := json.Marshal(e)
 	fmt.Println(employeeJSONasBytes)
 	if err != nil {
 		return nil,err
 	}
 	err = stub.PutState(employeeId, employeeJSONasBytes)
-	
+
 	if err != nil {
 		return nil,err
 	}
 	return nil,nil
 }
 func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
-	
+
 	if len(args) != 5 {
 		return nil,errors.New("Incorrect number of arguments. Expecting 5")
 	}
@@ -219,7 +219,7 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 	if len(args[4]) <= 0 {
 		return nil,errors.New("5th argument must be a non-empty string")
 	}
-	
+
 	projectName := args[0]
 	customerOf := strings.ToLower(args[2])
 	projectId, err := strconv.Atoi(args[1])
@@ -229,7 +229,7 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
-	
+
 	projectAsBytes, err := stub.GetState(projectIdAsString)
 	if err != nil {
 		return nil,err
@@ -237,20 +237,20 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 		fmt.Println("This project already exists: " + projectIdAsString)
 		return nil, errors.New("This project already exists "+projectIdAsString)
 	}
-	
+
 	project:= Project{projectName,projectId,customerOf,startDate,endDate}
-	
+
 	projectJSONasBytes, err := json.Marshal(project)
-	
+
 	if err != nil {
 		return nil,err
 	}
 	err = stub.PutState(projectIdAsString, projectJSONasBytes)
-	
+
 	if err != nil {
 		return nil,err
 	}
-	
+
 	// composite key creation for searching projects according to customer
 	/*
 	indexName := "customerOf"
@@ -275,7 +275,7 @@ func (t *SimpleChaincode) getProject(stub shim.ChaincodeStubInterface, args []st
 	if err != nil {
 		return nil,err
 	}
-	
+
 	return project,nil
 }
 
@@ -289,14 +289,14 @@ func (t *SimpleChaincode) getCustomer(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 		return nil,err
 	}
-	
+
 	return customer,nil
 }
 
 func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []string) ([]byte,error) {
 		if len(args) != 2{
 			return nil,errors.New("Incorrect number of arguments. Expecting 2")
-		}	
+		}
 			// ==== Input sanitation ====
 		fmt.Println("- start initCustomer")
 		if len(args[0]) <= 0 {
@@ -305,7 +305,7 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 		if len(args[1]) <= 0 {
 			return nil,errors.New("2nd argument must be a non-empty string")
 		}
-		
+
 		customerName := args[0]
 		customerId, err := strconv.Atoi(args[1])
 		customerIdAsString := args[1]
@@ -321,24 +321,24 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 		}
 
 		customer:= Customer{customerName,customerId}
-		
+
 		customerJSONasBytes, err := json.Marshal(customer)
-		
+
 		if err != nil {
 			return nil,err
 		}
 		err = stub.PutState(customerIdAsString, customerJSONasBytes)
-		
+
 		if err != nil {
 			return nil,err
 		}
-		
+		stub.SetEvent("customerAdded",[]byte(customerName))
 		fmt.Println("- end initCustomer")
 		return nil,nil
 }
 
 func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
-	
+
 	if len(args) != 3 {
 		return nil,errors.New("Incorrect number of arguments. Expecting 3")
 	}
@@ -353,7 +353,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	if len(args[2]) <= 0 {
 		return nil,errors.New("3rd argument must be a non-empty string")
 	}
-	
+
 	employeeName := args[0]
 	project := strings.ToLower(args[2])
 	employeeId, err := strconv.Atoi(args[1])
@@ -361,7 +361,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
-	
+
 	employeeAsBytes, err := stub.GetState(employeeIdAsString)
 	if err != nil {
 		return nil,err
@@ -369,7 +369,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 		fmt.Println("This employee already exists: " + employeeIdAsString)
 		return []byte("duplicate"),errors.New("This employee already exists: "+employeeIdAsString)
 	}
-	
+
 	employee:= Employee{employeeName,employeeId,project}
 	fmt.Println(employee)
 	employeeJSONasBytes, err := json.Marshal(employee)
@@ -378,15 +378,15 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 		return nil,err
 	}
 	err = stub.PutState(employeeIdAsString, employeeJSONasBytes)
-	
+
 	if err != nil {
 		return nil,err
 	}
 	employee_temp,_ := stub.GetState(employeeIdAsString)
 	fmt.Println(employee_temp)
 	// composite key to get employees by project
-	
-	/* 
+
+	/*
 	indexName := "project"
 	projectIndexKey, err := stub.CreateCompositeKey(indexName, []string{project, employeeIdAsString})
 	if err != nil {
@@ -394,7 +394,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	}
 
 	value := []byte{0x00}
-	stub.PutState(projectIndexKey, value) 
+	stub.PutState(projectIndexKey, value)
 	*/
 	fmt.Println("- end initEmployee")
 	return nil,nil
@@ -402,7 +402,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 
 func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
     fmt.Println("Query is running " + function)
-    
+
     if function =="getEmployee"{
 		return t.getEmployee(stub,args)
 	}else if function =="getCustomer"{
@@ -412,7 +412,7 @@ func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function strin
 	}else if function == "getEfforts"{
 		return t.getEfforts(stub,args)
 	}
-	
+
 	return nil,errors.New("Received unknown function query")
 }
 func (t *SimpleChaincode) getEfforts(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
@@ -426,7 +426,7 @@ func (t *SimpleChaincode) getEfforts(stub shim.ChaincodeStubInterface, args []st
 	if err != nil {
 		return nil,err
 	}
-	
+
 	return invoice,nil
 }
 func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
@@ -440,7 +440,7 @@ func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []s
 	if err != nil {
 		return nil,err
 	}
-	
+
 	return employee,nil
 }
 
