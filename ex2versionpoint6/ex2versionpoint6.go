@@ -112,8 +112,8 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 
 	var ef EmployeeEfforts
 	ef = EmployeeEfforts{Efforts:efforts,Project:e.Project}
-	toSend1,err := json.Marshal(ef)
-	stub.SetEvent("notifySubmitEfforts",toSend1)
+	// toSend1,err := json.Marshal(ef)
+	// stub.SetEvent("notifySubmitEfforts",toSend1)
 	ei.List = append(ei.List,ef)
 
 	employeeInvoiceAsBytes,err = json.Marshal(ei)
@@ -150,6 +150,7 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 		stub.SetEvent("submitEffortsError",[]byte("unable to find project or fetching project time error"))
 		return nil,err
 	}
+	stub.SetEvent("notifySubmitEfforts",[]byte("Efforts:"+efforts+","+"Project:"+e.Project))
 	stub.SetEvent("notifySubmitEffortsToProject",toSend2)
 	return nil,nil
 }
