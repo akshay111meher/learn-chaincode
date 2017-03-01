@@ -20,7 +20,10 @@ type Employee struct {
 	EmployeeId int `json:"employeeId"`
 	Project string `json:"project"`
 }
-
+type EmployeeAndProject struct{
+	Emp EmployeeEfforts
+	Prj ProjectEfforts
+}
 type Customer struct {
 	Name string `json:"name"`
 	CustomerId int `json:"customerId"`
@@ -110,8 +113,9 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	}
 	json.Unmarshal(employeeInvoiceAsBytes,&ei)
 
+  var empAndPrj EmployeeAndProject
 	var ef EmployeeEfforts
-	ef = EmployeeEfforts{Efforts:efforts,Project:e.Project}
+	ef = EmployeeEfforts{efforts,e.Project}
 	// toSend1,err := json.Marshal(ef)
 	// stub.SetEvent("notifySubmitEfforts",toSend1)
 	ei.List = append(ei.List,ef)
@@ -135,7 +139,6 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 
 	var pf ProjectEfforts
 	pf = ProjectEfforts{efforts,employeeId}
-	toSend2,err:= json.Marshal(pf)
 	pi.List = append(pi.List,pf)
 	projectInvoiceAsBytes,err = json.Marshal(pi)
 
@@ -150,8 +153,9 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 		stub.SetEvent("submitEffortsError",[]byte("unable to find project or fetching project time error"))
 		return nil,err
 	}
-	stub.SetEvent("notifySubmitEfforts",[]byte("Efforts:"+efforts+","+"Project:"+e.Project))
-	stub.SetEvent("notifySubmitEffortsToProject",toSend2)
+	empAndPrj = EmployeeAndProject{Emp:ef,Prj:pf}
+	toSend1,err := json.Marshal(empAndPrj)
+	stub.SetEvent("notifySubmitEfforts",toSend1)
 	return nil,nil
 }
 func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
