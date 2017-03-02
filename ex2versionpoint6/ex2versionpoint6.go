@@ -14,7 +14,9 @@ import (
 type SimpleChaincode struct {
 }
 
-
+type Error struct{
+	Err string
+}
 type Employee struct {
 	Name string `json:"name"`
 	EmployeeId int `json:"employeeId"`
@@ -79,13 +81,17 @@ func (t *SimpleChaincode) Invoke(stub shim.ChaincodeStubInterface, function stri
 	}else if function =="submitEfforts"{
 		return t.submitEfforts(stub,args)
 	}
-	stub.SetEvent("functionError",[]byte("function invocation error, "+function+" doesnt exist"))
+	error := Error{"function invocation error, "+function+" doesnt exist"}
+	errorMarshal,_:= json.Marshal(error)
+	stub.SetEvent("functionError",errorMarshal)
 	return nil,errors.New("Received unknown function invocation")
 }
 
 func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
 	if len(args)!=4{
-		stub.SetEvent("submitEffortsError",[]byte("Incorrect Number of arguments. Expecting 4"))
+		error := Error{"Incorrect Number of arguments. Expecting 4"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,errors.New("Incorrect Number of arguments. Expecting 4")
 	}
 	fmt.Println("- start submitEfforts -")
@@ -96,11 +102,15 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	employeeJSONasBytes,err := stub.GetState(employeeId)
 
 	if err != nil {
-		stub.SetEvent("submitEffortsError",[]byte("unable to find employee or fetching employee error"))
+		error := Error{"unable to find employee or fetching employee error"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,err
 	}
 	if len(employeeJSONasBytes)==0{
-		stub.SetEvent("submitEffortsError",[]byte("employee with ID "+employeeId+" does not exists"))
+		error := Error{"employee with ID "+employeeId+" does not exists"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,errors.New("employee with ID "+employeeId+" does not exists")
 	}
 	var e Employee
@@ -112,7 +122,9 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	employeeInvoiceAsBytes,err := stub.GetState(employeeIdAndTimestamp)
 
 	if err != nil{
-		stub.SetEvent("submitEffortsError",[]byte("unable to find employee with timestamp or fetching employee and timestamp error"))
+		error := Error{"unable to find employee with timestamp or fetching employee and timestamp error"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,err
 	}
 	json.Unmarshal(employeeInvoiceAsBytes,&ei)
@@ -126,7 +138,9 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 
 	employeeInvoiceAsBytes,err = json.Marshal(ei)
 	if err!= nil{
-		stub.SetEvent("submitEffortsError",[]byte("employee invoice marshalling error"))
+		error := Error{"employee invoice marshalling error"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,err
 	}
 	err = stub.PutState(employeeIdAndTimestamp,employeeInvoiceAsBytes)
@@ -147,14 +161,18 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 	projectInvoiceAsBytes,err = json.Marshal(pi)
 
 	if err!= nil{
-		stub.SetEvent("submitEffortsError",[]byte("unable to find project or fetching project error"))
+		error := Error{"unable to find project or fetching project error"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,err
 	}
 
 	err = stub.PutState(projectIdAndTimestamp,projectInvoiceAsBytes)
 
 	if err!= nil{
-		stub.SetEvent("submitEffortsError",[]byte("unable to find project or fetching project time error"))
+		error := Error{"unable to find project or fetching project time error"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("submitEffortsError",errorMarshal)
 		return nil,err
 	}
 	empAndPrj = EmployeeAndProject{Emp:ef,Prj:pf}
@@ -164,17 +182,23 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 }
 func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args []string)([]byte,error){
 	if len(args)!=2 {
-		stub.SetEvent("changeProjectError",[]byte("Incorrect Number of arguments. Expecting 2"))
+		error := Error{"Incorrect Number of arguments. Expecting 2"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("Incorrect Number of arguments. Expecting 2")
 	}
 	// ==== Input sanitation ====
 	fmt.Println("- start changeProject")
 	if len(args[0]) <= 0 {
-		stub.SetEvent("changeProjectError",[]byte("1st argument must be a non-empty string"))
+		error := Error{"1st argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("1st argument must be a non-empty string")
 	}
 	if len(args[1]) <= 0 {
-		stub.SetEvent("changeProjectError",[]byte("2nd argument must be a non-empty string"))
+		error := Error{"2nd argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("2nd argument must be a non-empty string")
 	}
 	employeeId := args[0]
@@ -182,13 +206,17 @@ func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args [
 	_, err := strconv.Atoi(project)
 
 	if err != nil {
-		stub.SetEvent("changeProjectError",[]byte("2nd argument must be a numeric string"))
+		error := Error{"2nd argument must be a numeric string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
 	_, err = strconv.Atoi(employeeId)
 
 	if err != nil {
-		stub.SetEvent("changeProjectError",[]byte("1st argument must be a numeric string"))
+		error := Error{"1st argument must be a numeric string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("1st argument must be a numeric string")
 	}
 
@@ -202,7 +230,9 @@ func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args [
 		return nil,err
 	}
 	if len(employee)==0{
-		stub.SetEvent("changeProjectError",[]byte("employee with ID "+employeeId+" doesnot exists"))
+		error := Error{"employee with ID "+employeeId+" doesnot exists"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("changeProjectError",errorMarshal)
 		return nil,errors.New("employee with ID "+employeeId+" doesnot exists")
 	}
 
@@ -228,29 +258,41 @@ func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args [
 func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
 
 	if len(args) != 5 {
-		stub.SetEvent("initProjectError",[]byte("Incorrect number of arguments. Expecting 5"))
+		error := Error{"Incorrect number of arguments. Expecting 5"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("Incorrect number of arguments. Expecting 5")
 	}
 	// ==== Input sanitation ====
 	fmt.Println("- start initProject")
 	if len(args[0]) <= 0 {
-		stub.SetEvent("initProjectError",[]byte("1st argument must be a non-empty string"))
+		error := Error{"1st argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("1st argument must be a non-empty string")
 	}
 	if len(args[1]) <= 0 {
-		stub.SetEvent("initProjectError",[]byte("2nd argument must be a non-empty string"))
+		error := Error{"2nd argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("2nd argument must be a non-empty string")
 	}
 	if len(args[2]) <= 0 {
-		stub.SetEvent("initProjectError",[]byte("3th argument must be a non-empty string"))
+		error := Error{"3rd argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("3rd argument must be a non-empty string")
 	}
 	if len(args[3]) <= 0 {
-		stub.SetEvent("initProjectError",[]byte("4th argument must be a non-empty string"))
+		error := Error{"4th argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("4th argument must be a non-empty string")
 	}
 	if len(args[4]) <= 0 {
-		stub.SetEvent("initProjectError",[]byte("5th argument must be a non-empty string"))
+		error := Error{"5th argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("5th argument must be a non-empty string")
 	}
 
@@ -261,24 +303,32 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 	startDate:= args[3]
 	endDate:= args[4]
 	if err != nil {
-		stub.SetEvent("initProjectError",[]byte("2nd argument must be a numeric string"))
+		error := Error{"2nd argument must be a numeric string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
 	customerJSONasBytes,err := stub.GetState(customerOf)
 	if err!=nil {
-		stub.SetEvent("initProjectError",[]byte("{\"error\":\"This customer doesnot exists: "+customerOf+"\"}"))
+		error := Error{"This customer doesnot exists: "+customerOf}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
 		return nil,errors.New("This customer doesnot exists: "+customerOf)
 	}
 	if len(customerJSONasBytes)==0 {
-		stub.SetEvent("notifyInitProject",[]byte("This customer doesnot exists: "+customerOf))
-		return nil,errors.New("This project doesnot exists: "+customerOf)
+		error := Error{"This customer doesnot exists: "+customerOf}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initProjectError",errorMarshal)
+		return nil,errors.New("This customer doesnot exists: "+customerOf)
 	}
 
 	projectAsBytes, err := stub.GetState(projectIdAsString)
 	if err != nil {
 		return nil,err
 	} else if projectAsBytes != nil {
-		stub.SetEvent("duplicateProject",[]byte("This project already exists: " + projectIdAsString))
+		error := Error{"This project already exists: " + projectIdAsString}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("duplicateProject",errorMarshal)
 		fmt.Println("This project already exists: " + projectIdAsString)
 		return nil, errors.New("This project already exists "+projectIdAsString)
 	}
@@ -340,17 +390,23 @@ func (t *SimpleChaincode) getCustomer(stub shim.ChaincodeStubInterface, args []s
 
 func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []string) ([]byte,error) {
 		if len(args) != 2{
-			stub.SetEvent("initCustomerError",[]byte("Incorrect number of arguments. Expecting 2"))
+			error := Error{"Incorrect number of arguments. Expecting 2"}
+			errorMarshal,_:= json.Marshal(error)
+			stub.SetEvent("initCustomerError",errorMarshal)
 			return nil,errors.New("Incorrect number of arguments. Expecting 2")
 		}
 			// ==== Input sanitation ====
 		fmt.Println("- start initCustomer")
 		if len(args[0]) <= 0 {
-			stub.SetEvent("initCustomerError",[]byte("1st argument must be a non-empty string"))
+			error := Error{"1st argument must be a non-empty string"}
+			errorMarshal,_:= json.Marshal(error)
+			stub.SetEvent("initCustomerError",errorMarshal)
 			return nil,errors.New("1st argument must be a non-empty string")
 		}
 		if len(args[1]) <= 0 {
-			stub.SetEvent("initCustomerError",[]byte("2nd argument must be a non-empty string"))
+			error := Error{"2nd argument must be a non-empty string"}
+			errorMarshal,_:= json.Marshal(error)
+			stub.SetEvent("initCustomerError",errorMarshal)
 			return nil,errors.New("2nd argument must be a non-empty string")
 		}
 
@@ -358,7 +414,9 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 		customerId, err := strconv.Atoi(args[1])
 		customerIdAsString := args[1]
 		if err != nil {
-			stub.SetEvent("initCustomerError",[]byte("2nd argument must be a numeric string"))
+			error := Error{"2nd argument must be a numeric string"}
+			errorMarshal,_:= json.Marshal(error)
+			stub.SetEvent("initCustomerError",errorMarshal)
 			return nil,errors.New("2nd argument must be a numeric string")
 		}
 		customerAsBytes, err := stub.GetState(customerIdAsString)
@@ -366,7 +424,9 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 			 return nil,err
 		} else if customerAsBytes != nil {
 			fmt.Println("This customer already exists: " + customerIdAsString)
-			stub.SetEvent("duplicateCustomer",[]byte("This customer already exists: " + customerIdAsString))
+			error := Error{"This customer already exists: " + customerIdAsString}
+			errorMarshal,_:= json.Marshal(error)
+			stub.SetEvent("initCustomerError",errorMarshal)
 			return nil,errors.New("This customer already exists: "+customerIdAsString)
 		}
 
@@ -390,21 +450,29 @@ func (t *SimpleChaincode) initCustomer(stub shim.ChaincodeStubInterface,args []s
 func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []string) ([]byte,error){
 
 	if len(args) != 3 {
-		stub.SetEvent("initEmployeeError",[]byte("Incorrect number of arguments. Expecting 3"))
+		error := Error{"Incorrect number of arguments. Expecting 3"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("Incorrect number of arguments. Expecting 3")
 	}
 	// ==== Input sanitation ====
 	fmt.Println("- start initEmployee")
 	if len(args[0]) <= 0 {
-		stub.SetEvent("initEmployeeError",[]byte("1st argument must be a non-empty string"))
+		error := Error{"1st argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("1st argument must be a non-empty string")
 	}
 	if len(args[1]) <= 0 {
-		stub.SetEvent("initEmployeeError",[]byte("2nd argument must be a non-empty string"))
+		error := Error{"2nd argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("2nd argument must be a non-empty string")
 	}
 	if len(args[2]) <= 0 {
-		stub.SetEvent("initEmployeeError",[]byte("3rd argument must be a non-empty string"))
+		error := Error{"3rd argument must be a non-empty string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("3rd argument must be a non-empty string")
 	}
 
@@ -414,16 +482,22 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	employeeIdAsString := args[1]
 
 	if err != nil {
-		stub.SetEvent("initEmployeeError",[]byte("2nd argument must be a numeric string"))
+		error := Error{"2nd argument must be a numeric string"}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
 	projectJSONasBytes,err := stub.GetState(project)
 	if err!=nil {
-		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
+		error := Error{"This project doesnot exists: "+project}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("notifyInitEmployee",errorMarshal)
 		return nil,errors.New("This project doesnot exists: "+project)
 	}
 	if len(projectJSONasBytes)==0 {
-		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
+		error := Error{"This project doesnot exists: "+project}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("notifyInitEmployee",errorMarshal)
 		return nil,errors.New("This project doesnot exists: "+project)
 	}
 
@@ -431,7 +505,9 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	if err != nil {
 		return nil,err
 	} else if employeeAsBytes != nil {
-		stub.SetEvent("duplicateEmployee",[]byte("This employee already exists: " + employeeIdAsString))
+		error := Error{"This employee already exists: " + employeeIdAsString}
+		errorMarshal,_:= json.Marshal(error)
+		stub.SetEvent("duplicateEmployee",errorMarshal)
 		fmt.Println("This employee already exists: " + employeeIdAsString)
 		return []byte("duplicate"),errors.New("This employee already exists: "+employeeIdAsString)
 	}
