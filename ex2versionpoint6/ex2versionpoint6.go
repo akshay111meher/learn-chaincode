@@ -266,7 +266,7 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 	}
 	customerJSONasBytes,err := stub.GetState(customerOf)
 	if err!=nil {
-		stub.SetEvent("notifyInitProject",[]byte("{\"error\":\"This customer doesnot exists: "+customerOf+"\"}"))
+		stub.SetEvent("initProjectError",[]byte("{\"error\":\"This customer doesnot exists: "+customerOf+"\"}"))
 		return nil,errors.New("This customer doesnot exists: "+customerOf)
 	}
 	if len(customerJSONasBytes)==0 {
