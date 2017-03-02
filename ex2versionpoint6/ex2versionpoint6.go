@@ -400,7 +400,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 		stub.SetEvent("initEmployeeError",[]byte("2nd argument must be a numeric string"))
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
-	_,err:= stub.GetState(project)
+	_,err = stub.GetState(project)
 	if err!=nil {
 		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
 		return nil,errors.New("This project doesnot exists")
