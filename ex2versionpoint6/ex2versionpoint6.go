@@ -491,7 +491,7 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	if err!=nil {
 		error := Error{"This project doesnot exists: "+project}
 		errorMarshal,_:= json.Marshal(error)
-		stub.SetEvent("notifyInitEmployee",errorMarshal)
+		stub.SetEvent("initEmployeeError",errorMarshal)
 		return nil,errors.New("This project doesnot exists: "+project)
 	}
 	if len(projectJSONasBytes)==0 {
