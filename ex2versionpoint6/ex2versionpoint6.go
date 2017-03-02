@@ -396,11 +396,14 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	employeeId, err := strconv.Atoi(args[1])
 	employeeIdAsString := args[1]
 
-	projectJSONasBytes,err:= stub.GetState(project)
-	stub.SetEvent("notifyInitEmployee",projectJSONasBytes)
 	if err != nil {
 		stub.SetEvent("initEmployeeError",[]byte("2nd argument must be a numeric string"))
 		return nil,errors.New("2nd argument must be a numeric string")
+	}
+	projectJSONasBytes,err:= stub.GetState(project)
+	if err!=nil {
+		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
+		return nil,errors.New("This project doesnot exists")
 	}
 
 	employeeAsBytes, err := stub.GetState(employeeIdAsString)
