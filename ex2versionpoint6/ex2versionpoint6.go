@@ -395,6 +395,9 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	project := strings.ToLower(args[2])
 	employeeId, err := strconv.Atoi(args[1])
 	employeeIdAsString := args[1]
+
+	projectJSONasBytes,err:= stub.GetState(project)
+	stub.SetEvent("notifyInitEmployee",projectJSONasBytes)
 	if err != nil {
 		stub.SetEvent("initEmployeeError",[]byte("2nd argument must be a numeric string"))
 		return nil,errors.New("2nd argument must be a numeric string")
@@ -476,7 +479,6 @@ func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []s
 	}
 	employeeId := args[0]
 	employee, err := stub.GetState(employeeId)
-	stub.SetEvent("notifyInitEmployee",employee)
 	fmt.Println(employee)
 	if err != nil {
 		return nil,err
