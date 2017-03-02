@@ -256,6 +256,15 @@ func (t *SimpleChaincode) initProject(stub shim.ChaincodeStubInterface, args []s
 		stub.SetEvent("initProjectError",[]byte("2nd argument must be a numeric string"))
 		return nil,errors.New("2nd argument must be a numeric string")
 	}
+	customerJSONasBytes,err := stub.GetState(customerOf)
+	if err!=nil {
+		stub.SetEvent("notifyInitProject",[]byte("This customer doesnot exists: "+customerOf))
+		return nil,errors.New("This customer doesnot exists: "+customerOf)
+	}
+	if len(customerJSONasBytes)==0 {
+		stub.SetEvent("notifyInitProject",[]byte("This customer doesnot exists: "+customerOf))
+		return nil,errors.New("This project doesnot exists: "+customerOf)
+	}
 
 	projectAsBytes, err := stub.GetState(projectIdAsString)
 	if err != nil {
@@ -403,11 +412,11 @@ func (t *SimpleChaincode) initEmployee(stub shim.ChaincodeStubInterface, args []
 	projectJSONasBytes,err := stub.GetState(project)
 	if err!=nil {
 		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
-		return nil,errors.New("This project doesnot exists")
+		return nil,errors.New("This project doesnot exists: "+project)
 	}
 	if len(projectJSONasBytes)==0 {
 		stub.SetEvent("notifyInitEmployee",[]byte("This project doesnot exists: "+project))
-		return nil,errors.New("This project doesnot exists")
+		return nil,errors.New("This project doesnot exists: "+project)
 	}
 
 	employeeAsBytes, err := stub.GetState(employeeIdAsString)
