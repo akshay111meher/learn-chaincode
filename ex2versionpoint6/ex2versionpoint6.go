@@ -476,6 +476,7 @@ func (t *SimpleChaincode) getEmployee(stub shim.ChaincodeStubInterface, args []s
 	}
 	employeeId := args[0]
 	employee, err := stub.GetState(employeeId)
+	stub.SetEvent("notifyInitEmployee",employee)
 	fmt.Println(employee)
 	if err != nil {
 		return nil,err
