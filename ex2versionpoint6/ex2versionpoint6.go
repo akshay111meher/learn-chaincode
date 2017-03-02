@@ -99,6 +99,10 @@ func (t *SimpleChaincode) submitEfforts(stub shim.ChaincodeStubInterface, args [
 		stub.SetEvent("submitEffortsError",[]byte("unable to find employee or fetching employee error"))
 		return nil,err
 	}
+	if len(employeeJSONasBytes)==0{
+		stub.SetEvent("submitEffortsError",[]byte("employee with ID "+employeeId+" does not exists"))
+		return nil,errors.New("employee with ID "+employeeId+" does not exists")
+	}
 	var e Employee
 	json.Unmarshal(employeeJSONasBytes,&e)
 
@@ -196,6 +200,10 @@ func (t *SimpleChaincode) changeProject(stub shim.ChaincodeStubInterface, args [
 	employee, err := stub.GetState(employeeId)
 	if err != nil {
 		return nil,err
+	}
+	if len(employee)==0{
+		stub.SetEvent("changeProjectError",[]byte("employee with ID "+employeeId+" doesnot exists"))
+		return nil,errors.New("employee with ID "+employeeId+" doesnot exists")
 	}
 
 	var e Employee
