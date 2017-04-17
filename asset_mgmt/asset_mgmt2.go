@@ -1,10 +1,10 @@
 package main
 
 import (
-	"encoding/base64"
+	// "encoding/base64"
 	"errors"
 	"fmt"
-
+	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
 	"github.com/op/go-logging"
@@ -14,7 +14,7 @@ var myLogger = logging.MustGetLogger("asset_mgm")
 
 type AssetManagementChaincode struct {
 }
-type Error string{
+type Error struct{
   Err string
 }
 type Circle struct{
@@ -86,13 +86,10 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 	myLogger.Debug("The caller is [%x]", callerCert)
 
 	id:= args[0]
-	owner, err := base64.StdEncoding.DecodeString(args[1])
+	owner:= args[1]
 	radius:= args[2]
-	if err != nil {
-		return nil, errors.New("Failed decodinf owner")
-	}
 
-	assestAsJson,err = stub.GetState(id)
+	assestAsJson,err := stub.GetState(id)
 
 	if len(assestAsJson)>=0{
 		myLogger.Debug("Asset already exists")
@@ -100,22 +97,23 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 	}
 
 	var c Circle
-	c = Circle{if,owner,radius}
-	assestAsJson = json.Marshal(c)
+	c = Circle{id,owner,radius}
+	assestAsJson,err = json.Marshal(c)
 	stub.PutState(id,assestAsJson)
 	return nil,nil
 }
 
 
-func (t *SimpleChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
+func (t *AssetManagementChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
     myLogger.Debug("Query is running " + function)
 
     if function =="getCircle"{
 		return t.getCircle(stub,args)
 	}
+	return nil,errors.New("Received unknown function query")
 }
 
-func (t *SimpleChaincode) getCircle(stub shim.ChaincodeStubInterface, args []string) ([]byte,error) {
+func (t *AssetManagementChaincode) getCircle(stub shim.ChaincodeStubInterface, args []string) ([]byte,error) {
 	myLogger.Debug("getCircle called")
 	if len(args) !=1{
 		return nil,errors.New("Incorrect number of arguments. Expecting 1")
@@ -127,9 +125,6 @@ func (t *SimpleChaincode) getCircle(stub shim.ChaincodeStubInterface, args []str
 	}
 
 	return circle,nil
-}
-
-	return nil,errors.New("Received unknown function query")
 }
 func main() {
 	primitives.SetSecurityLevel("SHA3", 256)
