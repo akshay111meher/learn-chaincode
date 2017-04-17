@@ -121,7 +121,7 @@ func (t *SimpleChaincode) getCircle(stub shim.ChaincodeStubInterface, args []str
 		return nil,errors.New("Incorrect number of arguments. Expecting 1")
 	}
 	Id := args[0]
-	circle, err := stub.GetState(circle)
+	circle, err := stub.GetState(Id)
 	if err != nil {
 		return nil,err
 	}
