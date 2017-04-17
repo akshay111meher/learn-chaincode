@@ -7,10 +7,7 @@ import (
 	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
-	"github.com/op/go-logging"
 )
-
-var myLogger = logging.MustGetLogger("asset_mgm")
 
 type AssetManagementChaincode struct {
 }
@@ -23,7 +20,7 @@ type Circle struct{
   Radius string
 }
 func (t *AssetManagementChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-  myLogger.Debug("Init Chaincode...")
+  fmt.Println("Init Chaincode...")
 	err := stub.CreateTable("AssetsOwnership", []*shim.ColumnDefinition{
 		&shim.ColumnDefinition{Name: "Asset", Type: shim.ColumnDefinition_STRING, Key: true},
 		&shim.ColumnDefinition{Name: "Owner", Type: shim.ColumnDefinition_BYTES, Key: false},
@@ -35,7 +32,7 @@ func (t *AssetManagementChaincode) Init(stub shim.ChaincodeStubInterface, functi
 }
 
 func (t *AssetManagementChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error){
-  myLogger.Info("Invoke is invoking function "+function)
+  fmt.Println("Invoke is invoking function "+function)
 
   if function == "createCircle"{
     return t.createCircle(stub,args)
@@ -75,15 +72,15 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
   }
 	callerCert, err := stub.GetCallerMetadata()
 	if err != nil {
-		myLogger.Debug("Failed getting metadata")
+		fmt.Println("Failed getting metadata")
 		return nil, errors.New("Failed getting metadata.")
 	}
 	if len(callerCert) == 0 {
-		myLogger.Debug("Invalid admin certificate. Empty.")
+		fmt.Println("Invalid admin certificate. Empty.")
 		return nil, errors.New("Invalid caller certificate. Empty.")
 	}
 
-	myLogger.Debug("The caller is [%x]", callerCert)
+	fmt.Println("The caller is [%x]", callerCert)
 
 	id:= args[0]
 	owner:= args[1]
@@ -92,7 +89,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 	assestAsJson,err := stub.GetState(id)
 
 	if len(assestAsJson)>=0{
-		myLogger.Debug("Asset already exists")
+		fmt.Println("Asset already exists")
 		return nil, errors.New("Cant create asset already exists")
 	}
 
@@ -105,7 +102,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 
 
 func (t *AssetManagementChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte,error) {
-    myLogger.Debug("Query is running " + function)
+    fmt.Println("Query is running " + function)
 
     if function =="getCircle"{
 		return t.getCircle(stub,args)
@@ -114,7 +111,7 @@ func (t *AssetManagementChaincode) Query(stub shim.ChaincodeStubInterface, funct
 }
 
 func (t *AssetManagementChaincode) getCircle(stub shim.ChaincodeStubInterface, args []string) ([]byte,error) {
-	myLogger.Debug("getCircle called")
+	fmt.Println("getCircle called")
 	if len(args) !=1{
 		return nil,errors.New("Incorrect number of arguments. Expecting 1")
 	}
