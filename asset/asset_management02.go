@@ -22,12 +22,10 @@ import (
 	"errors"
 	"strconv"
 	"strings"
+	"fmt"
 
 	"github.com/hyperledger/fabric/core/chaincode/shim"
-	"github.com/op/go-logging"
 )
-
-var myLogger = logging.MustGetLogger("asset_mgm")
 
 var cHandler = NewCertHandler()
 var dHandler = NewDepositoryHandler()
@@ -42,7 +40,7 @@ type AssetManagementChaincode struct {
 // args[1]: attribute name inside the investor's TCert that contains investor's account ID
 // args[2]: amount to be assigned to this investor's account ID
 func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debugf("+++++++++++++++++++++++++++++++++++assignOwnership+++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++assignOwnership+++++++++++++++++++++++++++++++++")
 
 	if len(args) != 3 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
@@ -52,27 +50,27 @@ func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterf
 	//assign asset to owners
 	isAuthorized, err := cHandler.isAuthorized(stub, "issuer")
 	if !isAuthorized {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("user is not aurthorized to assign assets")
 	}
 
 	owner, err := base64.StdEncoding.DecodeString(args[0])
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Failed decoding owner")
 	}
 	accountAttribute := args[1]
 
 	amount, err := strconv.ParseUint(args[2], 10, 64)
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Unable to parse amount" + args[2])
 	}
 
 	//retrieve account IDs from investor's TCert
 	accountIDs, err := cHandler.getAccountIDsFromAttribute(owner, []string{accountAttribute})
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Unable to retrieve account Ids from user certificate " + args[1])
 	}
 
@@ -94,7 +92,7 @@ func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterf
 // args[2]: Investor TCert that has account IDs which will have their balances increased
 // args[3]: attribute names inside TCert (arg[2]) that countain the account IDs
 func (t *AssetManagementChaincode) transferOwnership(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debugf("+++++++++++++++++++++++++++++++++++transferOwnership+++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++transferOwnership+++++++++++++++++++++++++++++++++")
 
 	if len(args) != 5 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
@@ -102,42 +100,42 @@ func (t *AssetManagementChaincode) transferOwnership(stub shim.ChaincodeStubInte
 
 	fromOwner, err := base64.StdEncoding.DecodeString(args[0])
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Failed decoding fromOwner")
 	}
 	fromAccountAttributes := strings.Split(args[1], ",")
 
 	toOwner, err := base64.StdEncoding.DecodeString(args[2])
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Failed decoding owner")
 	}
 	toAccountAttributes := strings.Split(args[3], ",")
 
 	amount, err := strconv.ParseUint(args[4], 10, 64)
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Unable to parse amount" + args[4])
 	}
 
 	// retrieve account IDs from "transfer from" TCert
 	fromAccountIds, err := cHandler.getAccountIDsFromAttribute(fromOwner, fromAccountAttributes)
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Unable to retrieve contact info from user certificate" + args[1])
 	}
 
 	// retrieve account IDs from "transfer to" TCert
 	toAccountIds, err := cHandler.getAccountIDsFromAttribute(toOwner, toAccountAttributes)
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return nil, errors.New("Unable to retrieve contact info from user certificate" + args[3])
 	}
 
 	// retrieve contact info from "transfer to" TCert
 	contactInfo, err := cHandler.getContactInfo(toOwner)
 	if err != nil {
-		myLogger.Errorf("system error %v received", err)
+		fmt.Println("system error %v received", err)
 		return nil, errors.New("Unable to retrieve contact info from user certificate" + args[4])
 	}
 
@@ -150,7 +148,7 @@ func (t *AssetManagementChaincode) transferOwnership(stub shim.ChaincodeStubInte
 // between investor and issuer, so that only issuer can decrypt such information
 // args[0]: one of the many account IDs owned by "some" investor
 func (t *AssetManagementChaincode) getOwnerContactInformation(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debugf("+++++++++++++++++++++++++++++++++++getOwnerContactInformation+++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++getOwnerContactInformation+++++++++++++++++++++++++++++++++")
 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
@@ -169,7 +167,7 @@ func (t *AssetManagementChaincode) getOwnerContactInformation(stub shim.Chaincod
 // getBalance retrieves the account balance information of the investor that owns a particular account ID
 // args[0]: one of the many account IDs owned by "some" investor
 func (t *AssetManagementChaincode) getBalance(stub shim.ChaincodeStubInterface, args []string) ([]byte, error) {
-	myLogger.Debugf("+++++++++++++++++++++++++++++++++++getBalance+++++++++++++++++++++++++++++++++")
+	fmt.Println("+++++++++++++++++++++++++++++++++++getBalance+++++++++++++++++++++++++++++++++")
 
 	if len(args) != 1 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
@@ -191,9 +189,9 @@ func (t *AssetManagementChaincode) getBalance(stub shim.ChaincodeStubInterface, 
 
 // Init initialization, this method will create asset despository in the chaincode state
 func (t *AssetManagementChaincode) Init(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	myLogger.Debugf("********************************Init****************************************")
+	fmt.Println("********************************Init****************************************")
 
-	myLogger.Info("[AssetManagementChaincode] Init")
+	fmt.Println("[AssetManagementChaincode] Init")
 	if len(args) != 0 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
 	}
@@ -204,7 +202,7 @@ func (t *AssetManagementChaincode) Init(stub shim.ChaincodeStubInterface, functi
 // Invoke  method is the interceptor of all invocation transactions, its job is to direct
 // invocation transactions to intended APIs
 func (t *AssetManagementChaincode) Invoke(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	myLogger.Debugf("********************************Invoke****************************************")
+	fmt.Println("********************************Invoke****************************************")
 
 	//	 Handle different functions
 	if function == "assignOwnership" {
@@ -221,7 +219,7 @@ func (t *AssetManagementChaincode) Invoke(stub shim.ChaincodeStubInterface, func
 // Query method is the interceptor of all invocation transactions, its job is to direct
 // query transactions to intended APIs, and return the result back to callers
 func (t *AssetManagementChaincode) Query(stub shim.ChaincodeStubInterface, function string, args []string) ([]byte, error) {
-	myLogger.Debugf("********************************Query****************************************")
+	fmt.Println("********************************Query****************************************")
 
 	// Handle different functions
 	if function == "getOwnerContactInformation" {
@@ -238,7 +236,7 @@ func main() {
 	//	primitives.SetSecurityLevel("SHA3", 256)
 	err := shim.Start(new(AssetManagementChaincode))
 	if err != nil {
-		myLogger.Debugf("Error starting AssetManagementChaincode: %s", err)
+		fmt.Println("Error starting AssetManagementChaincode: %s", err)
 	}
 
 }

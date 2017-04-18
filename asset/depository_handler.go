@@ -18,7 +18,7 @@ package main
 
 import (
 	"errors"
-
+	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 )
 
@@ -62,7 +62,7 @@ func (t *depositoryHandler) assign(stub shim.ChaincodeStubInterface,
 	contactInfo string,
 	amount uint64) error {
 
-	myLogger.Debugf("insert accountID= %v", accountID)
+	fmt.Println("insert accountID= %v", accountID)
 
 	//insert a new row for this account ID that includes contact information and balance
 	ok, err := stub.InsertRow(tableColumn, shim.Row{
@@ -74,7 +74,7 @@ func (t *depositoryHandler) assign(stub shim.ChaincodeStubInterface,
 
 	// you can only assign balances to new account IDs
 	if !ok && err == nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return errors.New("Asset was already assigned.")
 	}
 
@@ -91,7 +91,7 @@ func (t *depositoryHandler) updateAccountBalance(stub shim.ChaincodeStubInterfac
 	contactInfo string,
 	amount uint64) error {
 
-	myLogger.Debugf("insert accountID= %v", accountID)
+	fmt.Println("insert accountID= %v", accountID)
 
 	//replace the old record row associated with the account ID with the new record row
 	ok, err := stub.ReplaceRow(tableColumn, shim.Row{
@@ -102,7 +102,7 @@ func (t *depositoryHandler) updateAccountBalance(stub shim.ChaincodeStubInterfac
 	})
 
 	if !ok && err == nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return errors.New("failed to replace row with account Id." + accountID)
 	}
 	return nil
@@ -113,7 +113,7 @@ func (t *depositoryHandler) updateAccountBalance(stub shim.ChaincodeStubInterfac
 // accountID: account ID (record matching this account ID will be deleted after calling this method)
 func (t *depositoryHandler) deleteAccountRecord(stub shim.ChaincodeStubInterface, accountID string) error {
 
-	myLogger.Debugf("insert accountID= %v", accountID)
+	fmt.Println("insert accountID= %v", accountID)
 
 	//delete record matching account ID passed in
 	err := stub.DeleteRow(
@@ -122,7 +122,7 @@ func (t *depositoryHandler) deleteAccountRecord(stub shim.ChaincodeStubInterface
 	)
 
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return errors.New("error in deleting account record")
 	}
 	return nil
@@ -135,14 +135,14 @@ func (t *depositoryHandler) deleteAccountRecord(stub shim.ChaincodeStubInterface
 // toContact: contact information of the owner of "to account ID"
 func (t *depositoryHandler) transfer(stub shim.ChaincodeStubInterface, fromAccounts []string, toAccount string, toContact string, amount uint64) error {
 
-	myLogger.Debugf("insert params= %v , %v , %v , %v ", fromAccounts, toAccount, toContact, amount)
+	fmt.Println("insert params= %v , %v , %v , %v ", fromAccounts, toAccount, toContact, amount)
 
 	//collecting assets need to be transfered
 	remaining := amount
 	for i := range fromAccounts {
 		contactInfo, acctBalance, err := t.queryAccount(stub, fromAccounts[i])
 		if err != nil {
-			myLogger.Errorf("system error %v", err)
+			fmt.Println("system error %v", err)
 			return errors.New("error in deleting account record")
 		}
 
@@ -165,7 +165,7 @@ func (t *depositoryHandler) transfer(stub shim.ChaincodeStubInterface, fromAccou
 	//check if toAccount already exist
 	acctBalance, err := t.queryBalance(stub, toAccount)
 	if err == nil || acctBalance > 0 {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return errors.New("error in deleting account record")
 	}
 
@@ -192,7 +192,7 @@ func (t *depositoryHandler) queryContactInfo(stub shim.ChaincodeStubInterface, a
 // accountID: account ID
 func (t *depositoryHandler) queryBalance(stub shim.ChaincodeStubInterface, accountID string) (uint64, error) {
 
-	myLogger.Debugf("insert accountID= %v", accountID)
+	fmt.Println("insert accountID= %v", accountID)
 
 	row, err := t.queryTable(stub, accountID)
 	if err != nil {

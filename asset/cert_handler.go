@@ -18,7 +18,7 @@ package main
 
 import (
 	"errors"
-
+	"fmt"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/chaincode/shim/crypto/attr"
 )
@@ -55,7 +55,7 @@ func (t *certHandler) getContactInfo(cert []byte) (string, error) {
 
 	contactInfo, err := attr.GetValueFrom(contactInfo, cert)
 	if err != nil {
-		myLogger.Errorf("system error %v", err)
+		fmt.Println("system error %v", err)
 		return "", errors.New("unable to find user contact information")
 	}
 
@@ -76,17 +76,17 @@ func (t *certHandler) getAccountIDsFromAttribute(cert []byte, attributeNames []s
 	// for each attribute name, look for that attribute name inside TCert,
 	// the correspounding value of that attribute is the account ID
 	for _, attributeName := range attributeNames {
-		myLogger.Debugf("get value from attribute = v%", attributeName)
+		fmt.Println("get value from attribute = v%", attributeName)
 		//get the attribute value from the corresbonding attribute name
 		accountID, err := attr.GetValueFrom(attributeName, cert)
 		if err != nil {
-			myLogger.Errorf("system error %v", err)
+			fmt.Println("system error %v", err)
 			return nil, errors.New("unable to find user contact information")
 		}
 
 		acctIds = append(acctIds, string(accountID))
 	}
 
-	myLogger.Debugf("ids = %v", acctIds)
+	fmt.Println("ids = %v", acctIds)
 	return acctIds, nil
 }
