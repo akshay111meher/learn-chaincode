@@ -4,6 +4,8 @@ import (
 	// "encoding/base64"
 	"errors"
 	"fmt"
+	"strings"
+	"strconv"
 	"encoding/json"
 	"github.com/hyperledger/fabric/core/chaincode/shim"
 	"github.com/hyperledger/fabric/core/crypto/primitives"
@@ -75,9 +77,21 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 		fmt.Println("Failed getting metadata")
 		return nil, errors.New("Failed getting metadata.")
 	}
+	payload, err := stub.GetPayload()
+	if err != nil {
+		return nil, errors.New("Failed getting payload")
+	}
+	binding, err := stub.GetBinding()
+	if err != nil {
+		return nil, errors.New("Failed getting binding")
+	}
+  cc := convert(callerCert[:])
+	p := convert(payload[:])
+	b := convert(binding[:])
+
 	if len(callerCert) == 0 {
-		fmt.Println("Invalid admin certificate. Empty.")
-		return nil, errors.New("Invalid caller certificate. Empty.")
+		fmt.Println("Invalid caller certificate. Empty.")
+		return nil, errors.New(cc+p+b)
 	}
 
 	fmt.Println("The caller is [%x]", callerCert)
@@ -122,6 +136,13 @@ func (t *AssetManagementChaincode) getCircle(stub shim.ChaincodeStubInterface, a
 	}
 
 	return circle,nil
+}
+func convert( b []byte ) string {
+    s := make([]string,len(b))
+    for i := range b {
+        s[i] = strconv.Itoa(int(b[i]))
+    }
+    return strings.Join(s,",")
 }
 func main() {
 	primitives.SetSecurityLevel("SHA3", 256)
