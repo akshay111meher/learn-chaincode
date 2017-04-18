@@ -91,7 +91,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 
 	if len(callerCert) == 0 {
 		fmt.Println("Invalid caller certificate. Empty.")
-		return nil, errors.New(cc+p+b)
+		return nil, errors.New("this is error..."+cc+p+b)
 	}
 
 	fmt.Println("The caller is [%x]", callerCert)
