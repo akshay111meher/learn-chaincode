@@ -104,7 +104,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 
 	assestAsJson,err := stub.GetState(id)
 
-	if len(assestAsJson)>=0{
+	if len(assestAsJson)>0{
 		fmt.Println("Asset already exists")
 		return nil, errors.New("Cant create asset already exists")
 	}
