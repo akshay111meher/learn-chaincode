@@ -99,7 +99,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
 	fmt.Println("The caller is [%x]", callerCert)
 
 	id:= args[0]
-	owner:= args[1]
+	owner:= cc
 	radius:= args[2]
 
 	assestAsJson,err := stub.GetState(id)
