@@ -48,7 +48,7 @@ func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterf
 
 	//check is invoker has the correct role, only invokers with the "issuer" role is allowed to
 	//assign asset to owners
-	isAuthorized, err := cHandler.isAuthorized(stub, "issuer")
+	isAuthorized, err := cHandler.isAuthorized(stub, "institution_a")
 	if !isAuthorized {
 		fmt.Println("system error %v", err)
 		return nil, errors.New("user is not aurthorized to assign assets")
