@@ -45,7 +45,11 @@ func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterf
 	if len(args) != 3 {
 		return nil, errors.New("Incorrect number of arguments. Expecting 0")
 	}
-
+	fmt.Println(stub.GetArgs())
+	fmt.Println(stub.GetStringArgs())
+	fmt.Println(stub.TxID())
+	cert,_:= stub.GetCallerCertificate()
+	fmt.Println(cert)
 	//check is invoker has the correct role, only invokers with the "issuer" role is allowed to
 	//assign asset to owners
 	isAuthorized, err := cHandler.isAuthorized(stub, "institution_a")
