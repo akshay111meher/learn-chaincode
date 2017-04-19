@@ -47,7 +47,7 @@ func (t *AssetManagementChaincode) assignOwnership(stub shim.ChaincodeStubInterf
 	}
 	fmt.Println(stub.GetArgs())
 	fmt.Println(stub.GetStringArgs())
-	fmt.Println(stub.TxID())
+	fmt.Println(stub.GetTxID())
 	cert,_:= stub.GetCallerCertificate()
 	fmt.Println(cert)
 	//check is invoker has the correct role, only invokers with the "issuer" role is allowed to
