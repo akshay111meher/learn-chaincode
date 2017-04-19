@@ -72,7 +72,7 @@ func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface
     stub.SetEvent("createCircleError", errorMarshal)
     return nil, errors.New("3rd argument must be a non-empty string")
   }
-	callerCert, err := stub.GetCallerMetadata()
+	callerCert, err := stub.GetCallerCertificate()
 	if err != nil {
 		fmt.Println("Failed getting metadata")
 		return nil, errors.New("Failed getting metadata.")
