@@ -45,6 +45,49 @@ func (t *AssetManagementChaincode) Invoke(stub shim.ChaincodeStubInterface, func
   return nil,nil
 }
 
+func (t *AssetManagementChaincode) transferCircle(stub shim.ChaincodeStubInterface, args []string) ([]byte, error){
+	if len(args) != 2 {
+    error := Error{"Incorrect number of arguments. Expecting 2"}
+    errorMarshal, _ := json.Marshal(error)
+    stub.SetEvent("transferCircleError", errorMarshal)
+    return nil, errors.New("Incorrect number of arguments. Expecting 2")
+  }
+
+	id:= args[0]
+	assestAsJson,err := stub.GetState(id)
+
+	if len(assestAsJson)==0{
+		fmt.Println("Asset doesnt exists")
+		error := Error{"asset doesnt exists"}
+		errorMarshal, _ := json.Marshal(error)
+		stub.SetEvent("transferCircleError", errorMarshal)
+		return nil, errors.New("asset doesnt exists")
+	}
+
+	var cir Circle
+	json.Unmarshal(assestAsJson,&cir)
+
+	callerCert, err := stub.GetCallerCertificate()
+	if err != nil {
+		fmt.Println("Failed getting metadata")
+		return nil, errors.New("Failed getting metadata.")
+	}
+	cc := convert(callerCert[:])
+
+	if cc== cir.Owner{
+		cir.Owner = args[1]
+		assestAsJson,err = json.Marshal(cir)
+		stub.PutState(id,assestAsJson)
+	}else{
+		fmt.Println("you are not the rightful owner of the asset")
+		error := Error{"you are not the rightful owner of the asset"}
+		errorMarshal, _ := json.Marshal(error)
+		stub.SetEvent("transferCircleError", errorMarshal)
+		return nil, errors.New("you are not the rightful owner of the asset")
+	}
+	return nil,nil
+}
+
 func (t *AssetManagementChaincode) createCircle(stub shim.ChaincodeStubInterface, args []string) ([]byte, error){
   if len(args) != 3 {
     error := Error{"Incorrect number of arguments. Expecting 3"}
@@ -121,8 +164,10 @@ func (t *AssetManagementChaincode) Query(stub shim.ChaincodeStubInterface, funct
     fmt.Println("Query is running " + function)
 
     if function =="getCircle"{
-		return t.getCircle(stub,args)
-	}
+			return t.getCircle(stub,args)
+		}else if function == "getCertificate" {
+			return t.getCertificate(stub,args)
+		}
 	return nil,errors.New("Received unknown function query")
 }
 
@@ -138,6 +183,18 @@ func (t *AssetManagementChaincode) getCircle(stub shim.ChaincodeStubInterface, a
 	}
 
 	return circle,nil
+}
+func (t *AssetManagementChaincode) getCertificate(stub shim.ChaincodeStubInterface, args []string) ([]byte,error) {
+	fmt.Println("getCertificate called")
+	if len(args) !=1{
+		return nil,errors.New("Incorrect number of arguments. Expecting 1")
+	}
+	callerCert,err := stub.GetCallerCertificate()
+	if err != nil{
+		return callerCert,nil
+	}else{
+		return nil,err
+	}
 }
 func convert( b []byte ) string {
     s := make([]string,len(b))
